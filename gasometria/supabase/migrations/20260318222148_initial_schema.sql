@@ -1,5 +1,5 @@
 -- Extensão para gerar UUIDs
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Tipos de Animais
 CREATE TABLE public.animal_types (

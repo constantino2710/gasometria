@@ -1,6 +1,6 @@
 -- O Exame (Cabeçalho)
 CREATE TABLE public.exams (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     animal_id UUID REFERENCES public.animals(id) ON DELETE CASCADE,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     machine_id BIGINT REFERENCES public.machines(id) ON DELETE SET NULL,

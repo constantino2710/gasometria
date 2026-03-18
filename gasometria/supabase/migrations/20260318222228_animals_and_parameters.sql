@@ -1,6 +1,6 @@
 -- Animais
 CREATE TABLE public.animals (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     nome TEXT NOT NULL,
     animal_type_id BIGINT REFERENCES public.animal_types(id) ON DELETE SET NULL,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
