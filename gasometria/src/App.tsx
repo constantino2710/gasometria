@@ -2,9 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useAuth } from './auth/AuthProvider'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { AnimalDetailsPage } from './pages/AnimalDetailsPage'
-import { DashboardPage } from './pages/DashboardPage'
-import { LoginPage } from './pages/LoginPage'
+import { AnimalDetailsPage } from './pages/animal-details'
+import { DashboardPage } from './pages/dashboard'
+import { LoginPage } from './pages/login'
 
 type PublicRouteProps = {
   children: ReactNode

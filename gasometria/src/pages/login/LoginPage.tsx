@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../../auth/AuthProvider'
+import { Button, FormField, TextInput } from '../../components/ui'
 
 export function LoginPage() {
   const { signIn, user } = useAuth()
@@ -44,41 +45,33 @@ export function LoginPage() {
         <h1 className="text-2xl font-bold text-slate-900">Login</h1>
         <p className="text-sm text-slate-600">Entre com o usuario cadastrado no banco.</p>
 
-        <label className="text-sm font-medium text-slate-700" htmlFor="email">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          autoComplete="email"
-          required
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-        />
+        <FormField id="email" label="Email">
+          <TextInput
+            id="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+            required
+          />
+        </FormField>
 
-        <label className="text-sm font-medium text-slate-700" htmlFor="password">
-          Senha
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="current-password"
-          required
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-        />
+        <FormField id="password" label="Senha">
+          <TextInput
+            id="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </FormField>
 
         {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-xl bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-        >
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
           {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </button>
+        </Button>
       </form>
     </main>
   )
