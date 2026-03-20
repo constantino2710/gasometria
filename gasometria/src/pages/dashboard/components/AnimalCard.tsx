@@ -10,7 +10,7 @@ type AnimalCardProps = {
 export function AnimalCard({ id, nome, especie, sexo, idadeAnos, onOpen }: AnimalCardProps) {
   return (
     <button
-      className="rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-300 hover:shadow-md"
+      className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-300 hover:shadow-md"
       onClick={() => onOpen(id)}
       title={`Abrir ${nome}`}
     >

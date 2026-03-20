@@ -27,7 +27,7 @@ type ExtractedExamValues = {
   hematocrito: number | null
   hemoglobina: number | null
   temperatura: number | null
-  fio2: number | null
+  cloro: number | null
 }
 
 const FIXED_PROMPT = `
@@ -59,7 +59,7 @@ EXTRAIR APENAS OS SEGUINTES PARAMETROS:
 - Hematocrito
 - Hemoglobina
 - Temperatura
-- FIO2
+- Cloro (Cloreto)
 
 REGRAS DE IDENTIFICACAO:
 - pH -> "pH"
@@ -76,7 +76,7 @@ REGRAS DE IDENTIFICACAO:
 - Hematocrito -> "Ht", "Hematocrito"
 - Hemoglobina -> "Hb", "Hemoglobina"
 - Temperatura -> "Temp", "Temperatura"
-- FIO2 -> "FiO2", "FIO2"
+- Cloro -> "Cl", "Cloro", "Cloreto", "Chloride"
 
 REGRAS DE EXTRACAO:
 - Extrair APENAS o numero (sem unidade)
@@ -86,7 +86,7 @@ REGRAS DE EXTRACAO:
 
 FORMATO DE SAIDA OBRIGATORIO:
 Retorne APENAS um JSON valido com as chaves:
-ph, pco2, po2, be, hco3, tco2, so2, na, k, ica, glicose, hematocrito, hemoglobina, temperatura, fio2
+ph, pco2, po2, be, hco3, tco2, so2, na, k, ica, glicose, hematocrito, hemoglobina, temperatura, cloro
 
 PROIBIDO:
 - Retornar texto fora do JSON
@@ -98,7 +98,7 @@ PROIBIDO:
 
 const RECOVERY_PROMPT = `
 Retorne APENAS um JSON valido e completo com todas as 15 chaves obrigatorias:
-ph, pco2, po2, be, hco3, tco2, so2, na, k, ica, glicose, hematocrito, hemoglobina, temperatura, fio2.
+ph, pco2, po2, be, hco3, tco2, so2, na, k, ica, glicose, hematocrito, hemoglobina, temperatura, cloro.
 Se nao encontrar algum valor, use null.
 Nao retorne texto fora do JSON.
 `.trim()
@@ -118,7 +118,7 @@ const EMPTY_EXTRACTED_VALUES: ExtractedExamValues = {
   hematocrito: null,
   hemoglobina: null,
   temperatura: null,
-  fio2: null,
+  cloro: null,
 }
 
 function normalizeNumber(value: unknown): number | null {
@@ -153,7 +153,7 @@ function normalizeExtractedValues(raw: unknown): ExtractedExamValues {
     hematocrito: normalizeNumber(input.hematocrito),
     hemoglobina: normalizeNumber(input.hemoglobina),
     temperatura: normalizeNumber(input.temperatura),
-    fio2: normalizeNumber(input.fio2),
+    cloro: normalizeNumber(input.cloro),
   }
 }
 
@@ -291,7 +291,7 @@ Arquivo: ${body.fileName ?? 'nao informado'}
           hematocrito: { type: 'NUMBER', nullable: true },
           hemoglobina: { type: 'NUMBER', nullable: true },
           temperatura: { type: 'NUMBER', nullable: true },
-          fio2: { type: 'NUMBER', nullable: true },
+          cloro: { type: 'NUMBER', nullable: true },
         },
         required: [
           'ph',
@@ -308,7 +308,7 @@ Arquivo: ${body.fileName ?? 'nao informado'}
           'hematocrito',
           'hemoglobina',
           'temperatura',
-          'fio2',
+          'cloro',
         ],
       },
     }

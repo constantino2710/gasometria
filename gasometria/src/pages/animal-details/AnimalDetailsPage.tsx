@@ -31,8 +31,11 @@ type ExtractedExamValues = {
   hematocrito: number | null
   hemoglobina: number | null
   temperatura: number | null
-  fio2: number | null
+  cloro: number | null
 }
+
+type ExtractedExamValueKey = keyof ExtractedExamValues
+type ExtractedExamDraftValues = Record<ExtractedExamValueKey, string>
 
 type LatestExamRecord = {
   extractedValues: ExtractedExamValues
@@ -55,10 +58,10 @@ const EMPTY_EXTRACTED_VALUES: ExtractedExamValues = {
   hematocrito: null,
   hemoglobina: null,
   temperatura: null,
-  fio2: null,
+  cloro: null,
 }
 
-const EXAM_PARAMETER_FIELDS: Array<{ key: keyof ExtractedExamValues; label: string }> = [
+const EXAM_PARAMETER_FIELDS: Array<{ key: ExtractedExamValueKey; label: string }> = [
   { key: 'ph', label: 'pH' },
   { key: 'pco2', label: 'pCO2' },
   { key: 'po2', label: 'pO2' },
@@ -73,7 +76,7 @@ const EXAM_PARAMETER_FIELDS: Array<{ key: keyof ExtractedExamValues; label: stri
   { key: 'hematocrito', label: 'Hematocrito' },
   { key: 'hemoglobina', label: 'Hemoglobina' },
   { key: 'temperatura', label: 'Temperatura' },
-  { key: 'fio2', label: 'FIO2' },
+  { key: 'cloro', label: 'Cloro (Cl)' },
 ]
 
 function normalizeNumber(value: unknown): number | null {
@@ -88,6 +91,66 @@ function normalizeNumber(value: unknown): number | null {
   }
 
   return null
+}
+
+function toDraftValue(value: number | null): string {
+  return value === null ? '' : String(value)
+}
+
+function buildDraftValues(values: ExtractedExamValues): ExtractedExamDraftValues {
+  return {
+    ph: toDraftValue(values.ph),
+    pco2: toDraftValue(values.pco2),
+    po2: toDraftValue(values.po2),
+    be: toDraftValue(values.be),
+    hco3: toDraftValue(values.hco3),
+    tco2: toDraftValue(values.tco2),
+    so2: toDraftValue(values.so2),
+    na: toDraftValue(values.na),
+    k: toDraftValue(values.k),
+    ica: toDraftValue(values.ica),
+    glicose: toDraftValue(values.glicose),
+    hematocrito: toDraftValue(values.hematocrito),
+    hemoglobina: toDraftValue(values.hemoglobina),
+    temperatura: toDraftValue(values.temperatura),
+    cloro: toDraftValue(values.cloro),
+  }
+}
+
+function parseDraftNumber(value: string): number | null {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  const normalized = trimmed.replace(',', '.')
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function parseDraftValues(draft: ExtractedExamDraftValues): {
+  values: ExtractedExamValues
+  invalidFields: string[]
+} {
+  const parsedValues = { ...EMPTY_EXTRACTED_VALUES }
+  const invalidFields: string[] = []
+
+  EXAM_PARAMETER_FIELDS.forEach((field) => {
+    const draftValue = draft[field.key]
+    const parsed = parseDraftNumber(draftValue)
+
+    if (draftValue.trim() !== '' && parsed === null) {
+      invalidFields.push(field.label)
+      return
+    }
+
+    parsedValues[field.key] = parsed
+  })
+
+  return {
+    values: parsedValues,
+    invalidFields,
+  }
 }
 
 function normalizeExtractedValues(raw: unknown): ExtractedExamValues {
@@ -108,7 +171,7 @@ function normalizeExtractedValues(raw: unknown): ExtractedExamValues {
     hematocrito: normalizeNumber(input.hematocrito),
     hemoglobina: normalizeNumber(input.hemoglobina),
     temperatura: normalizeNumber(input.temperatura),
-    fio2: normalizeNumber(input.fio2),
+    cloro: normalizeNumber(input.cloro),
   }
 }
 
@@ -133,6 +196,12 @@ export function AnimalDetailsPage() {
   const [isSendingToAi, setIsSendingToAi] = useState(false)
   const [extractedValues, setExtractedValues] = useState<ExtractedExamValues | null>(null)
   const [latestExam, setLatestExam] = useState<LatestExamRecord | null>(null)
+  const [pendingReviewValues, setPendingReviewValues] = useState<ExtractedExamValues | null>(null)
+  const [pendingSourceFileName, setPendingSourceFileName] = useState<string | null>(null)
+  const [reviewDraftValues, setReviewDraftValues] =
+    useState<ExtractedExamDraftValues>(buildDraftValues(EMPTY_EXTRACTED_VALUES))
+  const [reviewError, setReviewError] = useState<string | null>(null)
+  const [isSavingReviewedExam, setIsSavingReviewedExam] = useState(false)
 
   useEffect(() => {
     void loadAnimal()
@@ -266,12 +335,14 @@ export function AnimalDetailsPage() {
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
-    setExtractedValues(null)
+    setPendingReviewValues(null)
+    setPendingSourceFileName(null)
+    setReviewError(null)
+    setReviewDraftValues(buildDraftValues(EMPTY_EXTRACTED_VALUES))
 
     if (!file) {
       setSelectedFile(null)
       setFileError(null)
-      setExtractedValues(latestExam?.extractedValues ?? null)
       return
     }
 
@@ -324,7 +395,9 @@ export function AnimalDetailsPage() {
     }
 
     setFileError(null)
-    setExtractedValues(null)
+    setPendingReviewValues(null)
+    setPendingSourceFileName(null)
+    setReviewError(null)
     setIsSendingToAi(true)
 
     try {
@@ -361,14 +434,59 @@ export function AnimalDetailsPage() {
       }
 
       const normalizedValues = normalizeExtractedValues(data?.extracted ?? EMPTY_EXTRACTED_VALUES)
-      setExtractedValues(normalizedValues)
-      await saveLatestExam(normalizedValues, selectedFile.name)
+      setPendingReviewValues(normalizedValues)
+      setPendingSourceFileName(selectedFile.name)
+      setReviewDraftValues(buildDraftValues(normalizedValues))
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha ao enviar documento para a IA.'
       setFileError(message)
     } finally {
       setIsSendingToAi(false)
     }
+  }
+
+  function handleReviewValueChange(key: ExtractedExamValueKey, value: string) {
+    setReviewDraftValues((previous) => ({
+      ...previous,
+      [key]: value,
+    }))
+  }
+
+  async function handleConfirmReviewedExam() {
+    if (!pendingReviewValues) {
+      return
+    }
+
+    const { values, invalidFields } = parseDraftValues(reviewDraftValues)
+
+    if (invalidFields.length > 0) {
+      setReviewError(`Existem valores invalidos em: ${invalidFields.join(', ')}.`)
+      return
+    }
+
+    setReviewError(null)
+    setIsSavingReviewedExam(true)
+
+    try {
+      await saveLatestExam(values, pendingSourceFileName)
+      setExtractedValues(values)
+      setPendingReviewValues(null)
+      setPendingSourceFileName(null)
+      setSelectedFile(null)
+      setReviewDraftValues(buildDraftValues(EMPTY_EXTRACTED_VALUES))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha ao salvar os valores revisados.'
+      setReviewError(message)
+    } finally {
+      setIsSavingReviewedExam(false)
+    }
+  }
+
+  function handleCancelReview() {
+    setPendingReviewValues(null)
+    setPendingSourceFileName(null)
+    setReviewError(null)
+    setReviewDraftValues(buildDraftValues(EMPTY_EXTRACTED_VALUES))
   }
 
   return (
@@ -459,6 +577,48 @@ export function AnimalDetailsPage() {
           Ir para lista de animais
         </Link>
       </p>
+
+      {pendingReviewValues ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-amber-200 bg-white p-5 shadow-xl">
+            <h4 className="text-lg font-semibold text-amber-900">Revise e edite antes de confirmar</h4>
+            <p className="mt-1 text-sm text-amber-800">
+              Confira os campos extraidos pela IA, ajuste se necessario e confirme para salvar e mostrar no exame
+              principal.
+              {pendingSourceFileName ? ` Arquivo: ${pendingSourceFileName}.` : ''}
+            </p>
+
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {EXAM_PARAMETER_FIELDS.map((field) => (
+                <label
+                  key={field.key}
+                  className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium uppercase tracking-wide text-amber-700"
+                >
+                  {field.label}
+                  <input
+                    type="text"
+                    value={reviewDraftValues[field.key]}
+                    onChange={(event) => handleReviewValueChange(field.key, event.target.value)}
+                    className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm font-semibold normal-case tracking-normal text-slate-900"
+                    placeholder="Nao encontrado"
+                  />
+                </label>
+              ))}
+            </div>
+
+            {reviewError ? <p className="mt-3 text-sm text-red-700">{reviewError}</p> : null}
+
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <Button type="button" variant="secondary" onClick={handleCancelReview} disabled={isSavingReviewedExam}>
+                Cancelar revisao
+              </Button>
+              <Button type="button" onClick={handleConfirmReviewedExam} disabled={isSavingReviewedExam}>
+                {isSavingReviewedExam ? 'Salvando...' : 'Confirmar e salvar exame'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </PageContainer>
   )
 }
