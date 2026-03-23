@@ -7,13 +7,16 @@ type ParameterRangeBarProps = {
   refText?: string
   forcedVisualMin?: number
   forcedVisualMax?: number
+  barColor?: string
+  labelDecimals?: number
+  labelColor?: string
 }
 
-function formatValue(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1)
+function formatValue(value: number, decimals?: number): string {
+  return decimals !== undefined ? value.toFixed(decimals) : String(value)
 }
 
-export function ParameterRangeBar({ label, min, max, patientValue, patientLabel = 'Paciente', refText, forcedVisualMin, forcedVisualMax }: ParameterRangeBarProps) {
+export function ParameterRangeBar({ label, min, max, patientValue, patientLabel = 'Paciente', refText, forcedVisualMin, forcedVisualMax, barColor = '#1b9bb6', labelDecimals, labelColor = '#047857' }: ParameterRangeBarProps) {
   if (min === null || max === null || max <= min) {
     return <p className="text-xs text-slate-500">Faixa da maquina indisponivel para {label.toLowerCase()}.</p>
   }
@@ -31,12 +34,27 @@ export function ParameterRangeBar({ label, min, max, patientValue, patientLabel 
 
   return (
     <div className="space-y-2">
-      {/* Barra de referência mais abaixo, sem valor do paciente acima */}
-      <div className="relative h-3 rounded-full bg-slate-200 mt-4">
+      {/* Labels min/max acima da barra */}
+      <div className="relative h-4 mt-4">
+        <span
+          className="absolute -translate-x-1/2 text-[10px] font-semibold"
+          style={{ left: `${machineMinPercent}%`, color: labelColor }}
+        >
+          {formatValue(min, labelDecimals)}
+        </span>
+        <span
+          className="absolute -translate-x-1/2 text-[10px] font-semibold"
+          style={{ left: `${machineMaxPercent}%`, color: labelColor }}
+        >
+          {formatValue(max, labelDecimals)}
+        </span>
+      </div>
+      {/* Barra */}
+      <div className="relative h-3 rounded-full bg-slate-200">
         {/* Faixa de referência da máquina */}
         <div
-          className="absolute h-full rounded-full bg-emerald-300"
-          style={{ left: `${machineMinPercent}%`, width: `${machineMaxPercent - machineMinPercent}%`, zIndex: 1 }}
+          className="absolute h-full rounded-full"
+          style={{ left: `${machineMinPercent}%`, width: `${machineMaxPercent - machineMinPercent}%`, zIndex: 1, backgroundColor: barColor }}
         />
 
         {/* Marcadores das extremidades da máquina */}

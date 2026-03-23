@@ -17,17 +17,13 @@ export function AnimalCard({ id, nome, especie, sexo, idadeAnos, onOpen }: Anima
         <p className="mt-1 text-sm text-slate-500">Especie: {especie}</p>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800">
-          Sexo: {sexo || 'Nao informado'}
-        </span>
-        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
-          Idade: {idadeAnos ? `${idadeAnos} ano(s)` : 'Nao informada'}
-        </span>
+      <div className="mt-2 space-y-0.5">
+        <p className="text-sm text-slate-500">Sexo: {sexo || 'Nao informado'}</p>
+        <p className="text-sm text-slate-500">Idade: {idadeAnos ? `${idadeAnos} ano(s)` : 'Nao informada'}</p>
       </div>
 
       <Button className="mt-4 w-full" type="button" variant="primary" onClick={() => onOpen(id)}>
-        Abrir ficha
+        Analisar
       </Button>
     </article>
   )

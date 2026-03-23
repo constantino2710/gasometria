@@ -120,26 +120,26 @@ const EMPTY_EXTRACTED_REFERENCES: ExtractedExamReferences = {
   cloro: { ...EMPTY_REFERENCE_RANGE },
 }
 
-const EXAM_PARAMETER_FIELDS: Array<{ key: ExtractedExamValueKey; label: string }> = [
+const EXAM_PARAMETER_FIELDS: Array<{ key: ExtractedExamValueKey; label: string; unit?: string }> = [
   { key: 'ph', label: 'pH' },
-  { key: 'hco3', label: 'HCO3' },
-  { key: 'pco2', label: 'pCO2' },
-  { key: 'po2', label: 'pO2' },
-  { key: 'be', label: 'BE' },
-  { key: 'be_cf', label: 'BE cf' },
-  { key: 'tco2', label: 'tCO2' },
-  { key: 'so2', label: 'sO2' },
-  { key: 'cso2', label: 'CSO2' },
-  { key: 'na', label: 'Sódio (Na)' },
-  { key: 'k', label: 'Potássio (K)' },
-  { key: 'ica', label: 'Ca++' },
-  { key: 'glicose', label: 'Glicose' },
-  { key: 'lactato', label: 'Lactato' },
-  { key: 'anion_gap', label: 'Ânion Gap' },
-  { key: 'hematocrito', label: 'Hematócrito' },
-  { key: 'hemoglobina', label: 'Hemoglobina' },
-  { key: 'temperatura', label: 'Temperatura' },
-  { key: 'cloro', label: 'Cloro (Cl)' },
+  { key: 'hco3', label: 'HCO3', unit: 'mmol/L' },
+  { key: 'pco2', label: 'pCO2', unit: 'mmHg' },
+  { key: 'po2', label: 'pO2', unit: 'mmHg' },
+  { key: 'be', label: 'BE', unit: 'mmol/L' },
+  { key: 'be_cf', label: 'BE cf', unit: 'mmol/L' },
+  { key: 'tco2', label: 'tCO2', unit: 'mmol/L' },
+  { key: 'so2', label: 'sO2', unit: '%' },
+  { key: 'cso2', label: 'CSO2', unit: '%' },
+  { key: 'na', label: 'Sódio (Na)', unit: 'mmol/L' },
+  { key: 'k', label: 'Potássio (K)', unit: 'mmol/L' },
+  { key: 'ica', label: 'Ca++', unit: 'mmol/L' },
+  { key: 'glicose', label: 'Glicose', unit: 'mg/dL' },
+  { key: 'lactato', label: 'Lactato', unit: 'mmol/L' },
+  { key: 'anion_gap', label: 'Ânion Gap', unit: 'mmol/L' },
+  { key: 'hematocrito', label: 'Hematócrito', unit: '%' },
+  { key: 'hemoglobina', label: 'Hemoglobina', unit: 'g/dL' },
+  { key: 'temperatura', label: 'Temperatura', unit: '°C' },
+  { key: 'cloro', label: 'Cloro (Cl)', unit: 'mmol/L' },
 ]
 
 function normalizeNumber(value: unknown): number | null {
@@ -371,16 +371,16 @@ function getCorrectedChlorideFormula(animalTypeName: string | null): CorrectedCh
 
   const normalizedName = normalizeAnimalTypeName(animalTypeName)
 
-  if (normalizedName === 'cao') {
-    return { speciesLabel: 'Cao', divisor: 146 }
+  if (normalizedName === 'cao' || normalizedName === 'canina') {
+    return { speciesLabel: 'Canina', divisor: 146 }
   }
 
-  if (normalizedName === 'gato') {
-    return { speciesLabel: 'Gato', divisor: 156 }
+  if (normalizedName === 'gato' || normalizedName === 'felina') {
+    return { speciesLabel: 'Felina', divisor: 156 }
   }
 
-  if (normalizedName === 'cavalo') {
-    return { speciesLabel: 'Cavalo', divisor: 104 }
+  if (normalizedName === 'cavalo' || normalizedName === 'equina') {
+    return { speciesLabel: 'Equina', divisor: 104 }
   }
 
   return null
@@ -449,6 +449,41 @@ export function AnimalDetailsPage() {
           : phReferenceBounds.max !== null && extractedPh > phReferenceBounds.max
             ? 'Alcalemia'
             : 'Dentro da faixa de referencia'
+
+  const hco3ReferenceBounds = resolveReferenceBounds(extractedReferences.hco3)
+  const pco2ReferenceBounds = resolveReferenceBounds(extractedReferences.pco2)
+
+  function getDirection(value: number | null, min: number | null, max: number | null): 'low' | 'high' | 'normal' | null {
+    if (value === null) return null
+    if (min !== null && value < min) return 'low'
+    if (max !== null && value > max) return 'high'
+    return 'normal'
+  }
+
+  const phDir = getDirection(extractedPh, phReferenceBounds.min, phReferenceBounds.max)
+  const hco3Dir = getDirection(extractedHco3, hco3ReferenceBounds.min, hco3ReferenceBounds.max)
+  const pco2Dir = getDirection(extractedPco2, pco2ReferenceBounds.min, pco2ReferenceBounds.max)
+
+  const acidBaseBase =
+    phDir === 'low' && hco3Dir === 'low' ? 'Acidose metabólica' :
+    phDir === 'low' && pco2Dir === 'high' ? 'Acidose respiratória' :
+    phDir === 'high' && hco3Dir === 'high' ? 'Alcalose metabólica' :
+    phDir === 'high' && pco2Dir === 'low' ? 'Alcalose respiratória' :
+    null
+
+  const winterCompensation =
+    acidBaseBase === 'Acidose metabólica' && expectedPco2Min !== null && expectedPco2Max !== null && extractedPco2 !== null
+      ? extractedPco2 >= expectedPco2Min && extractedPco2 <= expectedPco2Max
+        ? 'compensação adequada'
+        : extractedPco2 > expectedPco2Max
+          ? 'acidose respiratória associada'
+          : 'alcalose respiratória associada'
+      : null
+
+  const acidBaseInterpretation =
+    acidBaseBase === null ? null :
+    winterCompensation !== null ? `${acidBaseBase} com ${winterCompensation}` :
+    acidBaseBase
 
   useEffect(() => {
     void loadAnimal()
@@ -832,16 +867,26 @@ export function AnimalDetailsPage() {
           </div>
 
           {extractedValues ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                <h4 className="text-sm font-semibold text-emerald-900">
+            <div className="rounded-2xl border border-emerald-200 bg-[#36494f] p-4">
+                <h4 className="text-sm font-semibold text-white">
                   {latestExam ? 'Último exame salvo' : 'Valores extraídos do exame'}
                 </h4>
                 {latestExam ? (
-                  <p className="mt-1 text-xs text-emerald-800">
+                  <p className="mt-1 text-xs text-white/70">
                     Ultimo exame: {formatDateTime(latestExam.updatedAt)}
                     {latestExam.sourceFileName ? ` - arquivo: ${latestExam.sourceFileName}` : ''}
                   </p>
                 ) : null}
+                {acidBaseInterpretation && (
+                  <div className={`mt-3 rounded-xl px-4 py-3 bg-white border ${acidBaseInterpretation.startsWith('Acidose') ? 'border-red-400' : 'border-blue-400'}`}>
+                    <p className="text-xs font-semibold tracking-wide mb-0.5 text-slate-900">
+                      Interpretação ácido-base
+                    </p>
+                    <p className={`text-base font-bold ${acidBaseInterpretation.startsWith('Acidose') ? 'text-red-700' : 'text-blue-700'}`}>
+                      {acidBaseInterpretation}
+                    </p>
+                  </div>
+                )}
                 <ul className="mt-3 grid grid-cols-1 gap-2">
                     {EXAM_PARAMETER_FIELDS.map((field) => {
                       const reference = extractedReferences[field.key]
@@ -854,7 +899,9 @@ export function AnimalDetailsPage() {
                           className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-slate-900"
                         >
                           {/* Nome do exame destacado */}
-                          <p className="text-xs font-extrabold uppercase tracking-wide text-emerald-700">{field.label}</p>
+                          <p className="text-xs font-extrabold tracking-wide text-emerald-700">
+                            {field.label}{field.unit ? ` (${field.unit})` : ''}
+                          </p>
                           {/* Resultado extraído destacado */}
                           <p className="mt-1 text-lg font-extrabold text-sky-700">
                             {patientValue === null ? 'Nao encontrado' : patientValue}
@@ -868,11 +915,28 @@ export function AnimalDetailsPage() {
                                 Alcalemia
                               </span>
                             )}
+                            {field.key === 'hco3' && acidBaseBase === 'Acidose metabólica' && (
+                              <span className="ml-2 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                                Acidose metabólica
+                              </span>
+                            )}
+                            {field.key === 'hco3' && acidBaseBase === 'Alcalose metabólica' && (
+                              <span className="ml-2 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                Alcalose metabólica
+                              </span>
+                            )}
+                            {field.key === 'pco2' && (phDir === 'low' && pco2Dir === 'high' || winterCompensation === 'acidose respiratória associada') && (
+                              <span className="ml-2 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                                Acidose respiratória
+                              </span>
+                            )}
+                            {field.key === 'pco2' && phDir === 'high' && pco2Dir === 'low' && (
+                              <span className="ml-2 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                Alcalose respiratória
+                              </span>
+                            )}
                           </p>
-                          {/* Referência sem negrito */}
-                          <p>
-                            Ref: {formatReferenceValue(reference)}
-                          </p>
+
                           {(() => {
                             const showCompensatory = field.key === 'pco2' && phStatus === 'Acidemia' && expectedPco2Min !== null && expectedPco2Max !== null
 
@@ -893,7 +957,7 @@ export function AnimalDetailsPage() {
                               return (
                                 <>
                                   <div className="mt-2">
-                                    <p className="text-xs text-slate-400 mb-1">Referência da máquina</p>
+
                                     <ParameterRangeBar
                                       label={field.label}
                                       max={referenceBounds.max}
@@ -904,9 +968,8 @@ export function AnimalDetailsPage() {
                                     />
                                   </div>
                                   <div className="mt-5">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">pCO2 compensatória esperada</p>
-                                    <p className="text-xs text-slate-600 mb-1">
-                                      Resultado esperado: {formatExamValue(expectedPco2Min!)} a {formatExamValue(expectedPco2Max!)}
+                                    <p className="text-xs font-semibold tracking-wide mb-1" style={{ color: '#9a00ff' }}>
+                                      pCO2 compensatória esperada: {formatExamValue(expectedPco2Min!)} a {formatExamValue(expectedPco2Max!)}
                                     </p>
                                     <ParameterRangeBar
                                       label="pCO2 compensatória"
@@ -916,6 +979,9 @@ export function AnimalDetailsPage() {
                                       patientLabel="Paciente"
                                       forcedVisualMin={sharedVisualMin}
                                       forcedVisualMax={sharedVisualMax}
+                                      barColor="#9a00ff"
+                                      labelDecimals={1}
+                                      labelColor="#9a00ff"
                                     />
                                   </div>
                                 </>
@@ -935,7 +1001,7 @@ export function AnimalDetailsPage() {
                           })()}
                           {field.key === 'cloro' && (
                             <div className="mt-3">
-                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Cloro corrigido (mEq/L)</p>
+                              <p className="text-xs font-semibold text-slate-500 tracking-wide mb-1">Cloro corrigido (mEq/L)</p>
                               {!correctedChlorideFormula ? (
                                 <p className="text-xs text-slate-600">Não calculado (espécie sem fórmula configurada).</p>
                               ) : extractedCloro === null || extractedNa === null ? (
@@ -1028,9 +1094,9 @@ export function AnimalDetailsPage() {
 
           {animal ? (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <p className="text-xl font-semibold leading-tight text-slate-900">{animal.nome}</p>
-                <p className="mt-1 text-sm font-medium text-emerald-800">
+              <div className="rounded-2xl border border-emerald-200 bg-[#36494f] px-4 py-3">
+                <p className="text-xl font-semibold leading-tight text-white">{animal.nome}</p>
+                <p className="mt-1 text-sm font-medium text-white/70">
                   {getAnimalTypeName(animal.animal_types)}
                 </p>
               </div>
@@ -1071,9 +1137,9 @@ export function AnimalDetailsPage() {
             <ul className="space-y-2">
               {EXAM_PARAMETER_FIELDS.map((field) => (
                 <li key={field.key} className="rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-2 text-sm">
-                  <p className="text-xs font-medium uppercase tracking-wide text-amber-700">{field.label}</p>
+                  <p className="text-xs font-medium tracking-wide text-amber-700">{field.label}</p>
                   <div className="mt-1 space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-wide text-slate-700">Resultado</label>
+                    <label className="text-xs font-semibold tracking-wide text-slate-700">Resultado</label>
                     <TextInput
                     placeholder="Nao encontrado"
                     value={reviewDraftValues[field.key]}
