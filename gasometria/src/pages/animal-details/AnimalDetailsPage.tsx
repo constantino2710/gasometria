@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Info } from 'lucide-react'
 import { useAuth } from '../../auth/AuthProvider'
@@ -451,9 +451,9 @@ export function AnimalDetailsPage() {
       : phReferenceBounds.min === null && phReferenceBounds.max === null
         ? 'Nao calculado (faixa de referencia do pH nao encontrada).'
         : phReferenceBounds.min !== null && extractedPh < phReferenceBounds.min
-          ? 'Acidose'
+          ? 'Acidemia'
           : phReferenceBounds.max !== null && extractedPh > phReferenceBounds.max
-            ? 'Alcalose'
+            ? 'Alcalemia'
             : 'Dentro da faixa de referencia'
 
   useEffect(() => {
@@ -864,6 +864,16 @@ export function AnimalDetailsPage() {
                       <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Estado acido-basico</p>
                       <p className="mt-1 text-sm text-slate-900">
                         Resultado: {extractedPh === null ? 'Nao encontrado' : extractedPh}
+                        {phStatus === 'Acidemia' && (
+                          <span className="ml-2 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                            Acidemia
+                          </span>
+                        )}
+                        {phStatus === 'Alcalemia' && (
+                          <span className="ml-2 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                            Alcalemia
+                          </span>
+                        )}
                       </p>
                       <p className="mt-1 text-sm font-semibold text-slate-900">Interpretacao: {phStatus}</p>
                       <div className="mt-2">
