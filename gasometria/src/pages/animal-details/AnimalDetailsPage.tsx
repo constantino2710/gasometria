@@ -326,7 +326,7 @@ function formatReferenceValue(reference: ReferenceRange): string {
     return `<= ${formatExamValue(reference.max)}`
   }
 
-  return 'Nao encontrado'
+  return 'Não encontrado'
 }
 
 function resolveReferenceBounds(reference: ReferenceRange): { min: number | null; max: number | null } {
@@ -427,16 +427,25 @@ export function AnimalDetailsPage() {
     correctedChlorideFormula && extractedNa !== null && extractedCloro !== null && extractedNa !== 0
       ? extractedCloro * (correctedChlorideFormula.divisor / extractedNa)
       : null
+
+  const extractedK = extractedValues?.k ?? null
+  const extractedAnionGap = extractedValues?.anion_gap ?? null
+  const calculatedAnionGap =
+    extractedAnionGap === null &&
+    extractedNa !== null && extractedK !== null && extractedHco3 !== null && extractedCloro !== null
+      ? (extractedNa + extractedK) - (extractedHco3 + extractedCloro)
+      : null
+
   const phStatus =
     extractedPh === null
-      ? 'Nao calculado (pH nao encontrado).'
+      ? 'Não calculado (pH não encontrado).'
       : phReferenceBounds.min === null && phReferenceBounds.max === null
-        ? 'Nao calculado (faixa de referencia do pH nao encontrada).'
+        ? 'Não calculado (faixa de referência do pH não encontrada).'
         : phReferenceBounds.min !== null && extractedPh < phReferenceBounds.min
           ? 'Acidemia'
           : phReferenceBounds.max !== null && extractedPh > phReferenceBounds.max
             ? 'Alcalemia'
-            : 'Dentro da faixa de referencia'
+            : 'Dentro da faixa de referência'
 
   const hco3ReferenceBounds = resolveReferenceBounds(extractedReferences.hco3)
   const pco2ReferenceBounds = resolveReferenceBounds(extractedReferences.pco2)
@@ -480,7 +489,7 @@ export function AnimalDetailsPage() {
 
   async function loadAnimal() {
     if (!animalId) {
-      setErrorMessage('Animal invalido.')
+      setErrorMessage('Animal inválido.')
       setIsLoading(false)
       return
     }
@@ -510,7 +519,7 @@ export function AnimalDetailsPage() {
         }
 
         if (!fallback.data) {
-          setErrorMessage('Animal nao encontrado.')
+          setErrorMessage('Animal não encontrado.')
           setAnimal(null)
           setIsLoading(false)
           return
@@ -518,7 +527,7 @@ export function AnimalDetailsPage() {
 
         setAnimal(normalizeAnimal(fallback.data as Animal))
         setErrorMessage(
-          'Banco desatualizado: aplique as migracoes novas para visualizar sexo, idade, peso e observacoes.',
+          'Banco desatualizado: aplique as migrações novas para visualizar sexo, idade, peso e observações.',
         )
         setIsLoading(false)
         return
@@ -531,7 +540,7 @@ export function AnimalDetailsPage() {
     }
 
     if (!data) {
-      setErrorMessage('Animal nao encontrado.')
+      setErrorMessage('Animal não encontrado.')
       setAnimal(null)
       setIsLoading(false)
       return
@@ -608,7 +617,7 @@ export function AnimalDetailsPage() {
       .single()
 
     if (error) {
-      throw new Error(`Falha ao salvar ultimo exame: ${error.message}`)
+      throw new Error(`Falha ao salvar último exame: ${error.message}`)
     }
 
     setLatestExam({
@@ -635,13 +644,13 @@ export function AnimalDetailsPage() {
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setSelectedFile(null)
-      setFileError('Arquivo muito grande. Envie no maximo 10MB.')
+      setFileError('Arquivo muito grande. Envie no máximo 10MB.')
       return
     }
 
     if (!SUPPORTED_MIME_TYPES.has(file.type.toLowerCase())) {
       setSelectedFile(null)
-      setFileError('Formato invalido. Use PDF, JPG, PNG ou WEBP.')
+      setFileError('Formato inválido. Use PDF, JPG, PNG ou WEBP.')
       return
     }
 
@@ -672,7 +681,7 @@ export function AnimalDetailsPage() {
     event.preventDefault()
 
     if (!animal) {
-      setFileError('Animal nao encontrado.')
+      setFileError('Animal não encontrado.')
       return
     }
 
@@ -699,7 +708,7 @@ export function AnimalDetailsPage() {
       if (isInvalidRefreshToken || !session?.access_token) {
         clearStoredAuthSession()
         await supabase.auth.signOut({ scope: 'local' })
-        setFileError('Sua sessao expirou. Faca login novamente.')
+        setFileError('Sua sessão expirou. Faça login novamente.')
         navigate('/login', { replace: true })
         return
       }
@@ -758,7 +767,7 @@ export function AnimalDetailsPage() {
       if (isUnauthorized) {
         clearStoredAuthSession()
         await supabase.auth.signOut({ scope: 'local' })
-        setFileError('Sua sessao expirou. Faca login novamente.')
+        setFileError('Sua sessão expirou. Faça login novamente.')
         navigate('/login', { replace: true })
       } else {
         setFileError(message)
@@ -783,7 +792,7 @@ export function AnimalDetailsPage() {
     const { values, invalidFields } = parseDraftValues(reviewDraftValues)
 
     if (invalidFields.length > 0) {
-      setReviewError(`Existem valores invalidos em: ${invalidFields.join(', ')}.`)
+      setReviewError(`Existem valores inválidos em: ${invalidFields.join(', ')}.`)
       return
     }
 
@@ -835,10 +844,10 @@ export function AnimalDetailsPage() {
         {animal && (
           <article className="rounded-3xl border border-slate-200/90 bg-white/75 p-4 shadow-[0_8px_24px_-20px_rgba(15,23,42,0.45)] backdrop-blur-[1px]">
             <p className="text-lg font-bold leading-tight text-slate-900">{animal.nome}</p>
-            <p className="mt-1 text-sm text-slate-500">Especie: {getAnimalTypeName(animal.animal_types)}</p>
+            <p className="mt-1 text-sm text-slate-500">Espécie: {getAnimalTypeName(animal.animal_types)}</p>
             <div className="mt-2 space-y-0.5">
-              <p className="text-sm text-slate-500">Sexo: {animal.sexo || 'Nao informado'}</p>
-              <p className="text-sm text-slate-500">Idade: {animal.idade_anos ? `${animal.idade_anos} ano(s)` : 'Nao informada'}</p>
+              <p className="text-sm text-slate-500">Sexo: {(animal.sexo === 'Femea' ? 'Fêmea' : animal.sexo) || 'Não informado'}</p>
+              <p className="text-sm text-slate-500">Idade: {animal.idade_anos ? `${animal.idade_anos} ano(s)` : 'Não informada'}</p>
             </div>
           </article>
         )}
@@ -865,7 +874,7 @@ export function AnimalDetailsPage() {
                 </h4>
                 {latestExam ? (
                   <p className="mt-1 text-xs text-white/70">
-                    Ultimo exame: {formatDateTime(latestExam.updatedAt)}
+                    Último exame: {formatDateTime(latestExam.updatedAt)}
                     {latestExam.sourceFileName ? ` - arquivo: ${latestExam.sourceFileName}` : ''}
                   </p>
                 ) : null}
@@ -896,7 +905,7 @@ export function AnimalDetailsPage() {
                           </p>
                           {/* Resultado extraído destacado */}
                           <p className="mt-1 text-lg font-extrabold text-sky-700">
-                            {patientValue === null ? 'Nao encontrado' : patientValue}
+                            {patientValue === null ? 'Não encontrado' : patientValue}
                             {field.key === 'ph' && referenceBounds.min !== null && patientValue !== null && patientValue < referenceBounds.min && (
                               <span className="ml-2 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
                                 Acidemia
@@ -960,8 +969,11 @@ export function AnimalDetailsPage() {
                                     />
                                   </div>
                                   <div className="mt-5">
-                                    <p className="text-xs font-semibold tracking-wide mb-1" style={{ color: '#4d4d4d' }}>
+                                    <p className="text-xs font-semibold tracking-wide mb-0.5" style={{ color: '#4d4d4d' }}>
                                       pCO2 compensatória esperada: {formatExamValue(expectedPco2Min!)} a {formatExamValue(expectedPco2Max!)}
+                                    </p>
+                                    <p className="text-[11px] text-slate-400 mb-1">
+                                      Fórmula de Winter: pCO2 = (1.5 × HCO3) + 8 ± 2
                                     </p>
                                     <ParameterRangeBar
                                       label="pCO2 compensatória"
@@ -991,17 +1003,38 @@ export function AnimalDetailsPage() {
                               </div>
                             )
                           })()}
+                          {field.key === 'anion_gap' && extractedAnionGap === null && (
+                            <div className="mt-3">
+                              <p className="text-xs font-semibold text-slate-500 tracking-wide mb-1">Ânion Gap calculado (mEq/L)</p>
+                              {calculatedAnionGap === null ? (
+                                <p className="text-xs text-slate-600">Não calculado (Na, K, HCO3 ou Cloro não encontrado).</p>
+                              ) : (
+                                <>
+                                  <p className="text-xs text-slate-600">
+                                    Resultado: {formatExamValue(calculatedAnionGap)}
+                                  </p>
+                                  <p className="text-[11px] text-slate-400 mt-0.5">
+                                    Fórmula: AG = (Na + K) − (HCO3 + Cl)
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          )}
                           {field.key === 'cloro' && (
                             <div className="mt-3">
-                              <p className="text-xs font-semibold text-slate-500 tracking-wide mb-1">Cloro corrigido (mEq/L)</p>
                               {!correctedChlorideFormula ? (
-                                <p className="text-xs text-slate-600">Não calculado (espécie sem fórmula configurada).</p>
+                                <p className="text-xs text-slate-600">Cloro corrigido (mEq/L): Não calculado (espécie sem fórmula configurada).</p>
                               ) : extractedCloro === null || extractedNa === null ? (
-                                <p className="text-xs text-slate-600">Não calculado (Na ou Cloro não encontrado).</p>
+                                <p className="text-xs text-slate-600">Cloro corrigido (mEq/L): Não calculado (Na ou Cloro não encontrado).</p>
                               ) : extractedNa === 0 ? (
-                                <p className="text-xs text-slate-600">Não calculado (Na igual a 0).</p>
+                                <p className="text-xs text-slate-600">Cloro corrigido (mEq/L): Não calculado (Na igual a 0).</p>
                               ) : (
-                                <p className="text-xs text-slate-600">Resultado: {formatExamValue(correctedChlorideValue ?? 0)}</p>
+                                <>
+                                  <p className="text-xs text-slate-600">Cloro corrigido (mEq/L): {formatExamValue(correctedChlorideValue ?? 0)}</p>
+                                  <p className="text-[11px] text-slate-400 mt-0.5">
+                                    Fórmula ({correctedChlorideFormula.speciesLabel}): Cl corrigido = Cl × ({correctedChlorideFormula.divisor} / Na)
+                                  </p>
+                                </>
                               )}
                             </div>
                           )}
@@ -1012,7 +1045,7 @@ export function AnimalDetailsPage() {
             </div>
           ) : (
             <p className="rounded-2xl border border-dashed border-slate-300/80 bg-white/60 p-4 text-sm text-slate-600">
-              Nenhum exame extraido ainda. Toque no botao abaixo para enviar documento ou foto.
+              Nenhum exame extraído ainda. Toque no botão abaixo para enviar documento ou foto.
             </p>
           )}
 
@@ -1040,7 +1073,7 @@ export function AnimalDetailsPage() {
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Extrair novo documento</DialogTitle>
-            <DialogDescription>Envie foto ou PDF para extrair os parametros no Gemini.</DialogDescription>
+            <DialogDescription>Envie foto ou PDF para extrair os parâmetros.</DialogDescription>
           </DialogHeader>
 
           <form className="space-y-4" onSubmit={handleSendToAi}>
@@ -1048,20 +1081,26 @@ export function AnimalDetailsPage() {
               <label className="text-sm font-medium text-slate-700" htmlFor="animal-document">
                 Documento (PDF ou imagem)
               </label>
-              <TextInput
+              <label
+                htmlFor="animal-document"
+                className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-100"
+              >
+                <span className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                  Escolher arquivo
+                </span>
+                <span className="truncate text-slate-500">
+                  {selectedFile ? selectedFile.name : 'Nenhum arquivo selecionado'}
+                </span>
+              </label>
+              <input
                 accept=".pdf,.jpg,.jpeg,.png,.webp"
                 id="animal-document"
                 type="file"
+                className="sr-only"
                 onChange={handleFileChange}
               />
-              <p className="text-xs text-slate-500">Tamanho maximo: 10MB.</p>
+              <p className="text-xs text-slate-500">Tamanho máximo: 10MB.</p>
             </div>
-
-            {selectedFile ? (
-              <p className="text-xs text-slate-600">
-                Arquivo selecionado: <span className="font-semibold">{selectedFile.name}</span>
-              </p>
-            ) : null}
 
             {fileError ? <p className="text-sm text-red-700">{fileError}</p> : null}
 
@@ -1070,7 +1109,7 @@ export function AnimalDetailsPage() {
                 Cancelar
               </Button>
               <Button type="submit" disabled={isSendingToAi}>
-                {isSendingToAi ? 'Enviando...' : 'Enviar para Gemini'}
+                {isSendingToAi ? 'Enviando...' : 'Enviar'}
               </Button>
             </DialogFooter>
           </form>
@@ -1090,7 +1129,7 @@ export function AnimalDetailsPage() {
           <DialogHeader>
             <DialogTitle>Revise e edite antes de confirmar</DialogTitle>
             <DialogDescription>
-              Confira os campos extraidos pela IA, ajuste se necessario e confirme para salvar.
+              Confira os campos extraídos pela IA, ajuste se necessário e confirme para salvar.
               {pendingSourceFileName ? ` Arquivo: ${pendingSourceFileName}.` : ''}
             </DialogDescription>
           </DialogHeader>
@@ -1102,7 +1141,7 @@ export function AnimalDetailsPage() {
                   <div className="mt-1 space-y-1.5">
                     <label className="text-xs font-semibold tracking-wide text-slate-700">Resultado</label>
                     <TextInput
-                    placeholder="Nao encontrado"
+                    placeholder="Não encontrado"
                     value={reviewDraftValues[field.key]}
                     onChange={(event) => handleReviewValueChange(field.key, event.target.value)}
                     />
@@ -1117,7 +1156,7 @@ export function AnimalDetailsPage() {
             {reviewError ? <p className="text-sm font-medium text-red-600">{reviewError}</p> : null}
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={handleCancelReview} disabled={isSavingReviewedExam}>
-              Cancelar revisao
+              Cancelar revisão
             </Button>
             <Button type="button" onClick={handleConfirmReviewedExam} disabled={isSavingReviewedExam}>
               {isSavingReviewedExam ? 'Salvando...' : 'Confirmar e salvar exame'}

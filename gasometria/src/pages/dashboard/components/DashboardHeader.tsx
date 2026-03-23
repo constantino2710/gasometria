@@ -17,7 +17,7 @@ export function DashboardHeader({ userEmail, onCreateAnimal, onSignOut }: Dashbo
             <p className="text-xs tracking-[0.22em]" style={{ color: '#39484f' }}>GasoVet</p>
           </div>
           <h1 className="text-[1.55rem] font-bold leading-tight text-slate-900">Animais</h1>
-          <p className="text-xs text-slate-500">Usuario: {userEmail || 'Nao identificado'}</p>
+          <p className="text-xs text-slate-500">Usuário: {userEmail || 'Não identificado'}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">

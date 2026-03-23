@@ -18,7 +18,7 @@ function formatValue(value: number, decimals?: number): string {
 
 export function ParameterRangeBar({ label, min, max, patientValue, patientLabel = 'Paciente', refText, forcedVisualMin, forcedVisualMax, barColor = '#1b9bb6', labelDecimals, labelColor = '#047857' }: ParameterRangeBarProps) {
   if (min === null || max === null || max <= min) {
-    return <p className="text-xs text-slate-500">Faixa da maquina indisponivel para {label.toLowerCase()}.</p>
+    return <p className="text-xs text-slate-500">Faixa da máquina indisponível para {label.toLowerCase()}.</p>
   }
 
   const span = max - min

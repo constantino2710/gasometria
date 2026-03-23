@@ -29,7 +29,7 @@ export function LoginPage() {
     setIsSubmitting(false)
 
     if (result.error) {
-      setError('Nao foi possivel entrar. Verifique email e senha.')
+      setError('Não foi possível entrar. Verifique email e senha.')
       return
     }
 

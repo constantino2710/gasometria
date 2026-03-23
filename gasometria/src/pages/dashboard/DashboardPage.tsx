@@ -65,7 +65,7 @@ export function DashboardPage() {
           setAnimals((fallbackAnimals.data ?? []).map((item) => normalizeAnimal(item as Animal)))
           setIsLegacySchema(true)
           setErrorMessage(
-            'Banco desatualizado: aplique as migracoes novas para salvar sexo, idade, peso e observacoes.',
+            'Banco desatualizado: aplique as migrações novas para salvar sexo, idade, peso e observações.',
           )
         }
       } else {
@@ -107,12 +107,12 @@ export function DashboardPage() {
     event.preventDefault()
 
     if (!user) {
-      setErrorMessage('Usuario não autenticado.')
+      setErrorMessage('Usuário não autenticado.')
       return
     }
 
     if (!form.nome.trim() || !form.animal_type_id) {
-      setErrorMessage('Preencha nome e especie para cadastrar o animal.')
+      setErrorMessage('Preencha nome e espécie para cadastrar o animal.')
       return
     }
 
@@ -123,7 +123,7 @@ export function DashboardPage() {
 
     if (isLegacySchema) {
       setErrorMessage(
-        'Não foi possivel salvar: o banco ainda nao tem os campos novos. Rode as migrações do Supabase e tente novamente.',
+        'Não foi possível salvar: o banco ainda não tem os campos novos. Rode as migrações do Supabase e tente novamente.',
       )
       return
     }
