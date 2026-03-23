@@ -4,13 +4,14 @@
   max: number | null
   patientValue: number | null
   patientLabel?: string
+  refText?: string
 }
 
 function formatValue(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1)
 }
 
-export function ParameterRangeBar({ label, min, max, patientValue, patientLabel = 'Paciente' }: ParameterRangeBarProps) {
+export function ParameterRangeBar({ label, min, max, patientValue, patientLabel = 'Paciente', refText }: ParameterRangeBarProps) {
   if (min === null || max === null || max <= min) {
     return <p className="text-xs text-slate-500">Faixa da maquina indisponivel para {label.toLowerCase()}.</p>
   }
@@ -56,7 +57,9 @@ export function ParameterRangeBar({ label, min, max, patientValue, patientLabel 
         <span>Min maq: {formatValue(min)}</span>
         <span>Max maq: {formatValue(max)}</span>
       </div>
-      {/* Linha removida: Paciente: valor */}
+      {refText && (
+        <div className="text-[13px] text-slate-700 mt-1">{refText}</div>
+      )}
     </div>
   )
 }

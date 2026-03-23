@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+﻿import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Info } from 'lucide-react'
 import { useAuth } from '../../auth/AuthProvider'
@@ -967,16 +967,13 @@ export function AnimalDetailsPage() {
                               </span>
                             )}
                           </p>
-                          {/* Referência sem negrito */}
-                          <p>
-                            Ref: {formatReferenceValue(reference)}
-                          </p>
                           <div className="mt-2">
                             <ParameterRangeBar
                               label={field.label}
                               max={referenceBounds.max}
                               min={referenceBounds.min}
                               patientValue={patientValue}
+                              refText={`Ref: ${formatReferenceValue(reference)}`}
                             />
                           </div>
                         </li>
