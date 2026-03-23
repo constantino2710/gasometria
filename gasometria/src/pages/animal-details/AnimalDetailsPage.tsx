@@ -859,31 +859,6 @@ export function AnimalDetailsPage() {
                   </TabsList>
                   <TabsContent value="calculos">
                     <div className="mt-2 space-y-3">
-                    <div className="rounded-xl border border-emerald-200 bg-white px-3 py-3">
-                      <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Estado acido-basico</p>
-                      <p className="mt-1 text-sm text-slate-900">
-                        Resultado: {extractedPh === null ? 'Nao encontrado' : extractedPh}
-                        {phStatus === 'Acidemia' && (
-                          <span className="ml-2 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
-                            Acidemia
-                          </span>
-                        )}
-                        {phStatus === 'Alcalemia' && (
-                          <span className="ml-2 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-                            Alcalemia
-                          </span>
-                        )}
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">Interpretacao: {phStatus}</p>
-                      <div className="mt-2">
-                        <ParameterRangeBar
-                          label="pH"
-                          max={phReferenceBounds.max}
-                          min={phReferenceBounds.min}
-                          patientValue={extractedPh}
-                        />
-                      </div>
-                    </div>
 
                     <div className="rounded-xl border border-emerald-200 bg-white px-3 py-3">
                       <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">pCO2 compensatoria</p>
