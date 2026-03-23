@@ -127,11 +127,11 @@ const EMPTY_EXTRACTED_REFERENCES: ExtractedExamReferences = {
 
 const EXAM_PARAMETER_FIELDS: Array<{ key: ExtractedExamValueKey; label: string }> = [
   { key: 'ph', label: 'pH' },
+  { key: 'hco3', label: 'HCO3' },
   { key: 'pco2', label: 'pCO2' },
   { key: 'po2', label: 'pO2' },
   { key: 'be', label: 'BE' },
   { key: 'be_cf', label: 'BE cf' },
-  { key: 'hco3', label: 'HCO3' },
   { key: 'tco2', label: 'tCO2' },
   { key: 'so2', label: 'sO2' },
   { key: 'cso2', label: 'CSO2' },
