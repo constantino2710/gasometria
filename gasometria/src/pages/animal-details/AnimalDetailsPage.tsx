@@ -956,6 +956,16 @@ export function AnimalDetailsPage() {
                           {/* Resultado extraído destacado */}
                           <p className="mt-1 text-lg font-extrabold text-sky-700">
                             {patientValue === null ? 'Nao encontrado' : patientValue}
+                            {field.key === 'ph' && referenceBounds.min !== null && patientValue !== null && patientValue < referenceBounds.min && (
+                              <span className="ml-2 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                                Acidemia
+                              </span>
+                            )}
+                            {field.key === 'ph' && referenceBounds.max !== null && patientValue !== null && patientValue > referenceBounds.max && (
+                              <span className="ml-2 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                Alcalemia
+                              </span>
+                            )}
                           </p>
                           {/* Referência sem negrito */}
                           <p>
