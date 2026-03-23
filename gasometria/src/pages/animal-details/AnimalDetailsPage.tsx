@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Info } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../auth/AuthProvider'
 import {
   AlertMessage,
@@ -18,7 +18,6 @@ import {
 import { getAnimalTypeName, isAnimalsLegacySchemaError, normalizeAnimal } from '../../lib/animal-utils'
 import { clearStoredAuthSession, supabase } from '../../lib/supabase'
 import type { Animal } from '../../types/animals'
-import { AnimalInfoItem } from './components/AnimalInfoItem'
 import { ParameterRangeBar } from './components/ParameterRangeBar'
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
@@ -410,7 +409,6 @@ export function AnimalDetailsPage() {
     useState<ExtractedExamDraftValues>(buildDraftValues(EMPTY_EXTRACTED_VALUES))
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [isSavingReviewedExam, setIsSavingReviewedExam] = useState(false)
-  const [isAnimalInfoOpen, setIsAnimalInfoOpen] = useState(false)
   const [isExtractDialogOpen, setIsExtractDialogOpen] = useState(false)
   const extractedHco3 = extractedValues?.hco3 ?? null
   const extractedPco2 = extractedValues?.pco2 ?? null
@@ -819,27 +817,31 @@ export function AnimalDetailsPage() {
 
   return (
     <PageContainer maxWidthClassName="max-w-4xl">
-      <section className="mb-4 flex flex-col gap-3 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
+      <section className="mb-4 border-b border-slate-200/80 pb-4">
+        <div className="mb-3 flex items-center gap-2">
+          <button
+            aria-label="Voltar"
+            className="flex items-center justify-center rounded-full p-1 text-slate-600 hover:bg-slate-200/60"
+            type="button"
+            onClick={() => navigate('/dashboard')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
           <h1 className="truncate text-xl font-semibold leading-tight text-slate-900 sm:text-2xl">
             {animal?.nome ?? 'Animal'}
           </h1>
         </div>
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <Button
-            aria-label="Abrir informacoes do animal"
-            className="h-11 w-11 rounded-2xl p-0"
-            title="Informacoes"
-            type="button"
-            variant="secondary"
-            onClick={() => setIsAnimalInfoOpen(true)}
-          >
-            <Info className="h-4 w-4" />
-          </Button>
-          <Button className="flex-1 sm:flex-none" onClick={() => navigate('/dashboard')}>
-            Voltar
-          </Button>
-        </div>
+
+        {animal && (
+          <article className="rounded-3xl border border-slate-200/90 bg-white/75 p-4 shadow-[0_8px_24px_-20px_rgba(15,23,42,0.45)] backdrop-blur-[1px]">
+            <p className="text-lg font-bold leading-tight text-slate-900">{animal.nome}</p>
+            <p className="mt-1 text-sm text-slate-500">Especie: {getAnimalTypeName(animal.animal_types)}</p>
+            <div className="mt-2 space-y-0.5">
+              <p className="text-sm text-slate-500">Sexo: {animal.sexo || 'Nao informado'}</p>
+              <p className="text-sm text-slate-500">Idade: {animal.idade_anos ? `${animal.idade_anos} ano(s)` : 'Nao informada'}</p>
+            </div>
+          </article>
+        )}
       </section>
 
       {isLoading ? (
@@ -958,7 +960,7 @@ export function AnimalDetailsPage() {
                                     />
                                   </div>
                                   <div className="mt-5">
-                                    <p className="text-xs font-semibold tracking-wide mb-1" style={{ color: '#9a00ff' }}>
+                                    <p className="text-xs font-semibold tracking-wide mb-1" style={{ color: '#4d4d4d' }}>
                                       pCO2 compensatória esperada: {formatExamValue(expectedPco2Min!)} a {formatExamValue(expectedPco2Max!)}
                                     </p>
                                     <ParameterRangeBar
@@ -1075,37 +1077,6 @@ export function AnimalDetailsPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isAnimalInfoOpen} onOpenChange={setIsAnimalInfoOpen}>
-        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Informacoes do animal</DialogTitle>
-            <DialogDescription>Dados cadastrais e clinicos do paciente.</DialogDescription>
-          </DialogHeader>
-
-          {animal ? (
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-emerald-200 bg-[#36494f] px-4 py-3">
-                <p className="text-xl font-semibold leading-tight text-white">{animal.nome}</p>
-                <p className="mt-1 text-sm font-medium text-white/70">
-                  {getAnimalTypeName(animal.animal_types)}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <AnimalInfoItem label="Especie" value={getAnimalTypeName(animal.animal_types)} />
-                <AnimalInfoItem label="Sexo" value={animal.sexo || 'Nao informado'} />
-                <AnimalInfoItem
-                  label="Idade"
-                  value={animal.idade_anos ? `${animal.idade_anos} ano(s)` : 'Nao informada'}
-                />
-                <AnimalInfoItem label="Peso" value={animal.peso_kg ? `${animal.peso_kg} kg` : 'Nao informado'} />
-                <AnimalInfoItem label="Observacoes" value={animal.observacoes || 'Sem observacoes'} />
-                <AnimalInfoItem label="ID" value={animal.id} breakAll />
-              </div>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         open={Boolean(pendingReviewValues)}
